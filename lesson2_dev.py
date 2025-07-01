@@ -19,11 +19,12 @@ def shorten_link(token, long_link):
     }
     url = f"{BASE_URL}{method}"
     response = requests.get(url, headers=headers, params=params)
-    json_data = response.json()
-    if "error" in json_data:
-        return f"VK API ошибка: {json_data['error']['error_msg']}"
+    response.raise_for_status()
+    response_data = response.json()
+    if "error" in response_data:
+        return f"VK API ошибка: {response_data['error']['error_msg']}"
     else:
-        return json_data["response"]["short_url"]
+        return response_data["response"]["short_url"]
 
 
 def count_clicks(token, link):
@@ -41,8 +42,9 @@ def count_clicks(token, link):
     }
     url = f"{BASE_URL}{method}"
     response = requests.get(url, headers=headers, params=params)
-    json_data = response.json()
-    stats = json_data.get("response", {}).get("stats", [])
+    response.raise_for_status()
+    response_data = response.json()
+    stats = response_data.get("response", {}).get("stats", [])
     if stats:
         return stats[0].get("views", 0)
     else:
@@ -63,13 +65,14 @@ def is_shorten_link(token, user_link):
     }
     url = f"{BASE_URL}{method}"
     response = requests.get(url, headers=headers, params=params)
-    json_data = response.json()
-    return "response" in json_data and "stats" in json_data["response"]
+    response.raise_for_status()
+    response_data = response.json()
+    return "response" in response_data and "stats" in response_data["response"]
 
 
 def main():
     load_dotenv()
-    token = os.getenv("API_VK_SKEY")
+    token = os.getenv("API_VK_SERVICE_KEY")
     if not token:
         print("Ошибка: переменная окружения токена не найдена")
         return
